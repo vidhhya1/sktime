@@ -225,8 +225,28 @@ class NaiveForecaster(_BaseWindowForecaster):
                 f"the training series."
             )
 
+        return self 
+     
+    def _update(self, y, X=None, update_params=True):
+        if not update_params:
+            return self
+
+        if hasattr(self, "_y") and self._y is not None:
+            y = y.copy()
+            y.index = range(self._y.index[-1] + 1,
+                        self._y.index[-1] + 1 + len(y))
+            self._y = pd.concat([self._y, y])
+        else:
+            self._y = y
+
+        if hasattr(self, "window_length_") and self.window_length_ is not None:
+            self._y = self._y.tail(self.window_length_)
+
+        self._set_cutoff_from_y(self._y)
+
         return self
 
+        
     def _predict_last_window(
         self, fh, X=None, return_pred_int=False, alpha=DEFAULT_ALPHA
     ):
